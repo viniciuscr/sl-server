@@ -18,7 +18,8 @@
     "koa-router": "^7.4.0"
   },
   "scripts": {
-    "dev": "nodemon index"
+    "dev": "nodemon index",
+    "debug":"node --inspect index.js"
   },
   "devDependencies": {
     "nodemon": "^1.18.10"
