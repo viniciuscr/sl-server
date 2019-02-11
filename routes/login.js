@@ -1,7 +1,7 @@
 const Router = require("koa-router");
 const router = new Router();
-const Ctrl = require("../controller/login");
+const Middleware = require("../middleware/login");
 
-router.get("/", Ctrl.login);
+router.post("/", Middleware.login);
 
 module.exports = router.routes();
