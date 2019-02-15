@@ -9,6 +9,8 @@ const jwt = require("koa-jwt");
 const app = new Koa();
 const router = new Router();
 
+const onceToken = require("./middleware/onceToken");
+
 //set extra security headers
 app.use(Helmet());
 console.log(process.env.NODE_ENV);
@@ -30,6 +32,7 @@ app.use(
   })
 );
 
+
 //Adds useful methods to the Koa context.
 app.use(respond());
 
@@ -38,4 +41,5 @@ require("./routes")(router);
 app.use(router.routes());
 app.use(router.allowedMethods());
 
+app.use(onceToken());
 module.exports = app;

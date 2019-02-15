@@ -1,26 +1,20 @@
 const jwt = require("jsonwebtoken");
 
 const login = ctx => {
-  ctx.cookies.set(
-    "token",
-    jwt.sign(
-      {
-        data: "fofo"
-      },
-      "secret",
-      { expiresIn: "10m" }
-    ), {path:"/photographer", overwrite:true }
-  );
+
+  const user = getUser();
+
   ctx.body = {
-    token: jwt.sign(
-      {
-        data: "foobar"
-      },
-      "secret",
-      { expiresIn: "1h" }
-    )
+    token: jwt.sign(user, process.env.SECRET, { expiresIn: "1h" })
   };
 };
+
+const getUser = () => ({
+  username: "user",
+  password: "pass",
+  type: "photographer",
+  isAdmin: false
+});
 
 module.exports = {
   login
