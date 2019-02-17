@@ -37,7 +37,8 @@ app.use(
 app.use(respond());
 
 // API routes
-require("./routes")(router);
+// API routes
+require("./routes").default(router);
 app.use(router.routes());
 app.use(router.allowedMethods());
 

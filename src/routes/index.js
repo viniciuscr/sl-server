@@ -1,9 +1,9 @@
 /**
  * @param{ import("koa-router")} router
  */
-module.exports = router => {
+export default router => {
   router
     .prefix("/v1")
-    .use("/login", require("./login"))
+    .use("/login", require("./login").default)
     .use("/photographer", require("./photographer"));
 };

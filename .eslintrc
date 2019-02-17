@@ -1,0 +1,15 @@
+{
+  "extends": [
+    "eslint:recommended",
+    "prettier"
+  ],
+  "parser": "babel-eslint",
+  "env": {
+    "es6": true,
+    "mongo": true,
+    "node": true
+  },
+  "parserOptions": {
+    "sourceType": "module"
+  }
+}
