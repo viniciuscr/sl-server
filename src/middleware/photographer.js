@@ -1,221 +1,217 @@
-import bcrypt from 'bcrypt';
-
-const hashPassword = async password => await bcrypt.hash(password, 10)
+import bcrypt from "bcrypt";
+import UsersDAO from "../model/user.dao";
+import User from "../model/user";
+const hashPassword = async password => await bcrypt.hash(password, 10);
 
 export default class Photographer {
-    static async register(req, res) {
-        try {
-            const userFromBody = req.body
-            let errors = {}
-            if (userFromBody && userFromBody.password.length < 8) {
-                errors.password = "Your password must be at least 8 characters."
-            }
-            if (userFromBody && userFromBody.name.length < 3) {
-                errors.name = "You must specify a name of at least 3 characters."
-            }
+  static async register(req, res) {
+    try {
+      const userFromBody = req.body;
+      let errors = {};
+      if (userFromBody && userFromBody.password.length < 8) {
+        errors.password = "Your password must be at least 8 characters.";
+      }
+      if (userFromBody && userFromBody.name.length < 3) {
+        errors.name = "You must specify a name of at least 3 characters.";
+      }
 
-            if (Object.keys(errors).length > 0) {
-                this.badRequest(errors);
-                return
-            }
+      if (Object.keys(errors).length > 0) {
+        this.badRequest(errors);
+        return;
+      }
 
-            const userInfo = {
-                ...userFromBody,
-                password: await hashPassword(userFromBody.password),
-            }
+      const userInfo = {
+        ...userFromBody,
+        password: await hashPassword(userFromBody.password)
+      };
 
-            const insertResult = await UsersDAO.addUser(userInfo)
-            if (!insertResult.success) {
-                errors.email = insertResult.error
-            }
-            const userFromDB = await UsersDAO.getUser(userFromBody.email)
-            if (!userFromDB) {
-                errors.general = "Internal error, please try again later"
-            }
+      const insertResult = await UsersDAO.addUser(userInfo);
+      if (!insertResult.success) {
+        errors.email = insertResult.error;
+      }
+      const userFromDB = await UsersDAO.getUser(userFromBody.email);
+      if (!userFromDB) {
+        errors.general = "Internal error, please try again later";
+      }
 
-            if (Object.keys(errors).length > 0) {
-                res.status(400).json(errors)
-                return
-            }
+      if (Object.keys(errors).length > 0) {
+        res.status(400).json(errors);
+        return;
+      }
 
-            const user = new User(userFromDB)
+      const user = new User(userFromDB);
 
-            this.ok({
-                auth_token: user.encoded(),
-                info: user.toJson(),
-            })
-        } catch (e) {
-            res.status(500).json({ error: e })
-        }
+      this.ok({
+        auth_token: user.encoded(),
+        info: user.toJson()
+      });
+    } catch (e) {
+      res.status(500).json({ error: e });
     }
+  }
 
-    static async login(req, res, next) {
-        try {
-            const { email, password } = req.body
-            if (!email || typeof email !== "string") {
-                res.status(400).json({ error: "Bad email format, expected string." })
-                return
-            }
-            if (!password || typeof password !== "string") {
-                res.status(400).json({ error: "Bad password format, expected string." })
-                return
-            }
-            let userData = await UsersDAO.getUser(email)
-            if (!userData) {
-                res.status(401).json({ error: "Make sure your email is correct." })
-                return
-            }
-            const user = new User(userData)
+  static async login(ctx) {
+    try {
+      const { email, password } = ctx.body;
+      if (!email || typeof email !== "string") {
+        ctx.badRequest({ error: "Bad email format, expected string." });
+        return;
+      }
+      if (!password || typeof password !== "string") {
+        ctx.badRequest({ error: "Bad password format, expected string." });
+        return;
+      }
+      let userData = await UsersDAO.getUser(email);
+      if (!userData) {
+        ctx.unauthorized({ error: "Make sure your email is correct." });
+        return;
+      }
+      const user = new User(userData);
 
-            if (!(await user.comparePassword(password))) {
-                res.status(401).json({ error: "Make sure your password is correct." })
-                return
-            }
+      if (!(await user.comparePassword(password))) {
+        ctx.unauthorized({ error: "Make sure your password is correct." });
+        return;
+      }
 
-            const loginResponse = await UsersDAO.loginUser(user.email, user.encoded())
-            if (!loginResponse.success) {
-                res.status(500).json({ error: loginResponse.error })
-                return
-            }
-            res.json({ auth_token: user.encoded(), info: user.toJson() })
-        } catch (e) {
-            res.status(400).json({ error: e })
-            return
-        }
+      const loginResponse = await UsersDAO.loginUser(user.email, user.encoded());
+      if (!loginResponse.success) {
+        ctx.unauthorized({ error: loginResponse.error });
+        return;
+      }
+      ctx.ok({ auth_token: user.encoded(), info: user.toJson() });
+    } catch (e) {
+      ctx.badRequest({ error: e });
+      return;
     }
+  }
 
-    static async logout(req, res) {
-        try {
-            const userJwt = req.get("Authorization").slice("Bearer ".length)
-            const userObj = await User.decoded(userJwt)
-            var { error } = userObj
-            if (error) {
-                res.status(401).json({ error })
-                return
-            }
-            const logoutResult = await UsersDAO.logoutUser(userObj.email)
-            var { error } = logoutResult
-            if (error) {
-                res.status(500).json({ error })
-                return
-            }
-            res.json(logoutResult)
-        } catch (e) {
-            res.status(500).json(e)
-        }
+  static async logout(ctx) {
+    try {
+      const userJwt = ctx.get("Authorization").slice("Bearer ".length);
+      const userObj = await User.decoded(userJwt);
+
+      if (userObj.error) {
+        ctx.unauthorized.json({ error: userObj.error });
+        return;
+      }
+      const logoutResult = await UsersDAO.logoutUser(userObj.email);
+
+      if (logoutResult.error) {
+        ctx.internalServerError({ error: logoutResult.error });
+        return;
+      }
+      ctx.ok(logoutResult);
+    } catch (e) {
+      ctx.internalServerError.json(e);
     }
+  }
 
-    static async delete(req, res) {
-        try {
-            let { password } = req.body
-            if (!password || typeof password !== "string") {
-                res.status(400).json({ error: "Bad password format, expected string." })
-                return
-            }
-            const userJwt = req.get("Authorization").slice("Bearer ".length)
-            const userClaim = await User.decoded(userJwt)
-            var { error } = userClaim
-            if (error) {
-                res.status(401).json({ error })
-                return
-            }
-            const user = new User(await UsersDAO.getUser(userClaim.email))
-            if (!(await user.comparePassword(password))) {
-                res.status(401).json({ error: "Make sure your password is correct." })
-                return
-            }
-            const deleteResult = await UsersDAO.deleteUser(userClaim.email)
-            var { error } = deleteResult
-            if (error) {
-                res.status(500).json({ error })
-                return
-            }
-            res.json(deleteResult)
-        } catch (e) {
-            res.status(500).json(e)
-        }
+  static async delete(ctx) {
+    try {
+      let { password } = ctx.body;
+      if (!password || typeof password !== "string") {
+        ctx.badRequest({ error: "Bad password format, expected string." });
+        return;
+      }
+      const userJwt = ctx.get("Authorization").slice("Bearer ".length);
+      const userClaim = await User.decoded(userJwt);
+      if (userClaim.error) {
+        ctx.badRequest({ error:userClaim.error });
+        return;
+      }
+      const user = new User(await UsersDAO.getUser(userClaim.email));
+      if (!(await user.comparePassword(password))) {
+        ctx.badRequest({ error: "Make sure your password is correct." });
+        return;
+      }
+      const deleteResult = await UsersDAO.deleteUser(userClaim.email);
+      if (deleteResult.error) {
+        ctx.internalServerError({ error: deleteResult.error });
+        return;
+      }
+      ctx.ok(deleteResult);
+    } catch (e) {
+        ctx.internalServerError(e);
     }
+  }
 
-    static async save(req, res) {
-        try {
-            const userJwt = req.get("Authorization").slice("Bearer ".length)
-            const userFromHeader = await User.decoded(userJwt)
-            var { error } = userFromHeader
-            if (error) {
-                res.status(401).json({ error })
-                return
-            }
+  static async save(ctx) {
+    try {
+      const userJwt = ctx.get("Authorization").slice("Bearer ".length);
+      const userFromHeader = await User.decoded(userJwt);
+      var { error } = userFromHeader;
+      if (error) {
+        ctx.unauthorized({ error });
+        return;
+      }
 
-            await UsersDAO.updatePreferences(
-                userFromHeader.email,
-                req.body.preferences,
-            )
-            const userFromDB = await UsersDAO.getUser(userFromHeader.email)
-            const updatedUser = new User(userFromDB)
+      await UsersDAO.updatePreferences(userFromHeader.email, ctx.body.preferences);
+      const userFromDB = await UsersDAO.getUser(userFromHeader.email);
+      const updatedUser = new User(userFromDB);
 
-            res.json({
-                auth_token: updatedUser.encoded(),
-                info: updatedUser.toJson(),
-            })
-        } catch (e) {
-            res.status(500).json(e)
-        }
+      ctx.ok({
+        auth_token: updatedUser.encoded(),
+        info: updatedUser.toJson()
+      });
+    } catch (e) {
+      ctx.internalServerError(e);
     }
+  }
 
-    // for internal use only
-    static async createAdminUser(req, res) {
-        try {
-            const userFromBody = req.body
-            let errors = {}
-            if (userFromBody && userFromBody.password.length < 8) {
-                errors.password = "Your password must be at least 8 characters."
-            }
-            if (userFromBody && userFromBody.name.length < 3) {
-                errors.name = "You must specify a name of at least 3 characters."
-            }
+  // for internal use only
+  static async createAdminUser(req, res) {
+    try {
+      const userFromBody = req.body;
+      let errors = {};
+      if (userFromBody && userFromBody.password.length < 8) {
+        errors.password = "Your password must be at least 8 characters.";
+      }
+      if (userFromBody && userFromBody.name.length < 3) {
+        errors.name = "You must specify a name of at least 3 characters.";
+      }
 
-            if (Object.keys(errors).length > 0) {
-                res.status(400).json(errors)
-                return
-            }
+      if (Object.keys(errors).length > 0) {
+        res.status(400).json(errors);
+        return;
+      }
 
-            const userInfo = {
-                ...userFromBody,
-                password: await hashPassword(userFromBody.password),
-            }
+      const userInfo = {
+        ...userFromBody,
+        password: await hashPassword(userFromBody.password)
+      };
 
-            const insertResult = await UsersDAO.addUser(userInfo)
-            if (!insertResult.success) {
-                errors.email = insertResult.error
-            }
+      const insertResult = await UsersDAO.addUser(userInfo);
+      if (!insertResult.success) {
+        errors.email = insertResult.error;
+      }
 
-            if (Object.keys(errors).length > 0) {
-                res.status(400).json(errors)
-                return
-            }
+      if (Object.keys(errors).length > 0) {
+        res.status(400).json(errors);
+        return;
+      }
 
-            const makeAdminResponse = await UsersDAO.makeAdmin(userFromBody.email)
+      const makeAdminResponse = await UsersDAO.makeAdmin(userFromBody.email);
 
-            const userFromDB = await UsersDAO.getUser(userFromBody.email)
-            if (!userFromDB) {
-                errors.general = "Internal error, please try again later"
-            }
+      const userFromDB = await UsersDAO.getUser(userFromBody.email);
+      if (!userFromDB) {
+        errors.general = "Internal error, please try again later";
+      }
 
-            if (Object.keys(errors).length > 0) {
-                res.status(400).json(errors)
-                return
-            }
+      if (Object.keys(errors).length > 0) {
+        res.status(400).json(errors);
+        return;
+      }
 
-            const user = new User(userFromDB)
-            const jwt = user.encoded()
-            const loginResponse = await UsersDAO.loginUser(user.email, jwt)
+      const user = new User(userFromDB);
+      const jwt = user.encoded();
+      const loginResponse = await UsersDAO.loginUser(user.email, jwt);
 
-            res.json({
-                auth_token: jwt,
-                info: user.toJson(),
-            })
-        } catch (e) {
-            res.status(500).json(e)
-        }
+      res.json({
+        auth_token: jwt,
+        info: user.toJson()
+      });
+    } catch (e) {
+      res.status(500).json(e);
     }
+  }
 }

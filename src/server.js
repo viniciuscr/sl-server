@@ -33,10 +33,9 @@ app.use(
 );
 
 
-//Adds useful methods to the Koa context.
+//Adds useful methods to Koa context.
 app.use(respond());
 
-// API routes
 // API routes
 require("./routes").default(router);
 app.use(router.routes());
