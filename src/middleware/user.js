@@ -1,9 +1,9 @@
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import UsersDAO from "../model/user.dao";
-import User from "../model/user";
-const hashPassword = async password => await bcrypt.hash(password, 10);
+import UserModel from "../model/user";
+const hashPassword = password =>  bcrypt.hashSync(password, 10);
 
-export default class Photographer {
+export default class User {
   static async register(req, res) {
     try {
       const userFromBody = req.body;
@@ -39,7 +39,7 @@ export default class Photographer {
         return;
       }
 
-      const user = new User(userFromDB);
+      const user = new UserModel(userFromDB);
 
       this.ok({
         auth_token: user.encoded(),
@@ -51,8 +51,9 @@ export default class Photographer {
   }
 
   static async login(ctx) {
+
     try {
-      const { email, password } = ctx.body;
+      const { email, password } = ctx.request.body;
       if (!email || typeof email !== "string") {
         ctx.badRequest({ error: "Bad email format, expected string." });
         return;
@@ -66,21 +67,20 @@ export default class Photographer {
         ctx.unauthorized({ error: "Make sure your email is correct." });
         return;
       }
-      const user = new User(userData);
-
-      if (!(await user.comparePassword(password))) {
-        ctx.unauthorized({ error: "Make sure your password is correct." });
+      const user = new UserModel(userData);
+      if (!(user.comparePassword(password))) {
+        ctx.unauthorized("Make sure your password is correct." );
         return;
       }
-
       const loginResponse = await UsersDAO.loginUser(user.email, user.encoded());
       if (!loginResponse.success) {
         ctx.unauthorized({ error: loginResponse.error });
         return;
       }
+      
       ctx.ok({ auth_token: user.encoded(), info: user.toJson() });
-    } catch (e) {
-      ctx.badRequest({ error: e });
+    } catch (e) { 
+      ctx.badRequest({ error: {message: e.message} });
       return;
     }
   }
@@ -88,7 +88,7 @@ export default class Photographer {
   static async logout(ctx) {
     try {
       const userJwt = ctx.get("Authorization").slice("Bearer ".length);
-      const userObj = await User.decoded(userJwt);
+      const userObj = await UserModel.decoded(userJwt);
 
       if (userObj.error) {
         ctx.unauthorized.json({ error: userObj.error });
@@ -108,18 +108,18 @@ export default class Photographer {
 
   static async delete(ctx) {
     try {
-      let { password } = ctx.body;
+      let { password } = ctx.request.body;
       if (!password || typeof password !== "string") {
         ctx.badRequest({ error: "Bad password format, expected string." });
         return;
       }
       const userJwt = ctx.get("Authorization").slice("Bearer ".length);
-      const userClaim = await User.decoded(userJwt);
+      const userClaim = await UserModel.decoded(userJwt);
       if (userClaim.error) {
         ctx.badRequest({ error:userClaim.error });
         return;
       }
-      const user = new User(await UsersDAO.getUser(userClaim.email));
+      const user = new UserModel(await UsersDAO.getUser(userClaim.email));
       if (!(await user.comparePassword(password))) {
         ctx.badRequest({ error: "Make sure your password is correct." });
         return;
@@ -138,16 +138,16 @@ export default class Photographer {
   static async save(ctx) {
     try {
       const userJwt = ctx.get("Authorization").slice("Bearer ".length);
-      const userFromHeader = await User.decoded(userJwt);
+      const userFromHeader = await UserModel.decoded(userJwt);
       var { error } = userFromHeader;
       if (error) {
         ctx.unauthorized({ error });
         return;
       }
 
-      await UsersDAO.updatePreferences(userFromHeader.email, ctx.body.preferences);
+      await UsersDAO.updatePreferences(userFromHeader.email, ctx.request.body.preferences);
       const userFromDB = await UsersDAO.getUser(userFromHeader.email);
-      const updatedUser = new User(userFromDB);
+      const updatedUser = new UserModel(userFromDB);
 
       ctx.ok({
         auth_token: updatedUser.encoded(),
@@ -156,8 +156,7 @@ export default class Photographer {
     } catch (e) {
       ctx.internalServerError(e);
     }
-  }
-
+  }   
   // for internal use only
   static async createAdminUser(req, res) {
     try {
@@ -190,7 +189,7 @@ export default class Photographer {
         return;
       }
 
-      const makeAdminResponse = await UsersDAO.makeAdmin(userFromBody.email);
+     // const makeAdminResponse = await UsersDAO.makeAdmin(userFromBody.email);
 
       const userFromDB = await UsersDAO.getUser(userFromBody.email);
       if (!userFromDB) {
@@ -202,7 +201,7 @@ export default class Photographer {
         return;
       }
 
-      const user = new User(userFromDB);
+      const user = new UserModel(userFromDB);
       const jwt = user.encoded();
       const loginResponse = await UsersDAO.loginUser(user.email, jwt);
 

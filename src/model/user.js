@@ -1,8 +1,8 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-const roles = { g: "guest", a: "admin", p: "photographer", c: "cliente" };
-export class User {
+const roles = { guest: "g", admin: "a", photographer: "p", cliente: "c" };
+export default class User {
   constructor({ name, email, password, role, preferences = {} } = {}) {
     this.name = name;
     this.email = email;
@@ -18,22 +18,23 @@ export class User {
       preferences: this.preferences
     };
   }
-  async comparePassword(plainText) {
-    return await bcrypt.compare(plainText, this.password);
+  comparePassword(plainText) {
+    return bcrypt.compareSync(plainText, this.password);
   }
   encoded() {
     return jwt.sign(
-      { 
-        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 4,
-        ...this.toJson()
-      },
-      process.env.SECRET_KEY, {
+      this.toJson(),
+
+      process.env.SECRET_KEY,
+      {
         expiresIn: Math.floor(Date.now() / 1000) + 60 * 60 * 4,
-        algorithm: "HS384",
-        
+        algorithm: "HS384"
       }
     );
   }
+
+  static async inpersonate(email) {}
+
   static async decoded(userJwt) {
     return jwt.verify(userJwt, process.env.SECRET_KEY, (error, res) => {
       if (error) {

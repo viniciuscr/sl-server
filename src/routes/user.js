@@ -1,7 +1,7 @@
 import Router from "koa-router";
 const router = new Router();
-import { login } from "../middleware/login";
+import Middleware from "../middleware/user";
 
-router.post("/", login);
+router.get("/login", Middleware.login);
 
 export default router.routes();

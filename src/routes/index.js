@@ -4,6 +4,5 @@
 export default router => {
   router
     .prefix("/v1")
-    .use("/login", require("./login").default)
-    .use("/photographer", require("./photographer"));
+    .use("/user", require("./user").default)
 };

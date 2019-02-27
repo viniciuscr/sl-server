@@ -1,24 +1,18 @@
-const Koa = require("koa");
-const Router = require("koa-router");
-const Logger = require("koa-logger");
-const Cors = require("@koa/cors");
-const BodyParser = require("koa-bodyparser");
-const Helmet = require("koa-helmet");
-const respond = require("koa-respond");
-const jwt = require("koa-jwt");
+import Koa from "koa";
+import Router from "koa-router";
+import Logger from "koa-logger";
+import Cors from "@koa/cors";
+import BodyParser from "koa-bodyparser";
+import Helmet from "koa-helmet";
+import respond from "koa-respond";
+import jwt from "koa-jwt";
 const app = new Koa();
 const router = new Router();
 
-const onceToken = require("./middleware/onceToken");
-
 //set extra security headers
 app.use(Helmet());
-console.log(process.env.NODE_ENV);
-if (process.env.NODE_ENV === "development") {
-  app.use(Logger());
-}
 
-app.use(jwt({ secret: process.env.SECRET }).unless({ path: [/^\/v[\d]{1,2}\/login/] }));
+process.env.NODE_ENV === "development" && app.use(Logger());
 
 app.use(Cors());
 app.use(
@@ -32,7 +26,7 @@ app.use(
   })
 );
 
-
+app.use(jwt({ secret: process.env.SECRET }).unless({ path: [/^\/v[\d]{1,2}\/user\/login/] }));
 //Adds useful methods to Koa context.
 app.use(respond());
 
@@ -41,5 +35,6 @@ require("./routes").default(router);
 app.use(router.routes());
 app.use(router.allowedMethods());
 
-app.use(onceToken());
-module.exports = app;
+console.log(router.stack.map(i => i.path));
+
+export default app;
