@@ -5,4 +5,5 @@ export default router => {
   router
     .prefix("/v1")
     .use("/user", require("./user").default)
+    .use("/event", require("./event").default)
 };

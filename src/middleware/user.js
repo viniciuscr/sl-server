@@ -78,7 +78,7 @@ export default class User {
         return;
       }
       
-      ctx.ok({ auth_token: user.encoded(), info: user.toJson() });
+      ctx.ok({ auth_token: user.encoded(), user: user.toJson() });
     } catch (e) { 
       ctx.badRequest({ error: {message: e.message} });
       return;

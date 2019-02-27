@@ -26,7 +26,7 @@ app.use(
   })
 );
 
-app.use(jwt({ secret: process.env.SECRET }).unless({ path: [/^\/v[\d]{1,2}\/user\/login/] }));
+app.use(jwt({ secret: process.env.SECRET_KEY }).unless({ path: [/^\/v[\d]{1,2}\/user\/login/] }));
 //Adds useful methods to Koa context.
 app.use(respond());
 
