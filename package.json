@@ -14,7 +14,7 @@
     "jsonwebtoken": "^8.4.0",
     "koa": "^2.7.0",
     "koa-bodyparser": "^4.2.1",
-    "koa-busboy": "^1.2.0",
+    "koa-busboy": "https://github.com/viniciuscr/koa-busboy",
     "koa-helmet": "^4.0.0",
     "koa-jwt": "^3.5.1",
     "koa-logger": "^3.2.0",
