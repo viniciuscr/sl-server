@@ -33,7 +33,7 @@ export default class User {
     );
   }
 
-  static async inpersonate(email) {}
+  static async inpersonate() {}
 
   static async decoded(userJwt) {
     return jwt.verify(userJwt, process.env.SECRET_KEY, (error, res) => {

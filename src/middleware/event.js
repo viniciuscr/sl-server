@@ -1,9 +1,6 @@
 import EventDao from "../model/event.dao";
-import Busboy from "busboy";
-import path from "path";
 import fs from "fs";
-import os from "os";
-import shortid from 'shortid'
+import shortid from "shortid";
 const roles = ["p", "a"];
 
 export default class Event {
@@ -30,36 +27,47 @@ export default class Event {
         return;
       }
       event.status = "pending upload";
-      event.hash = shortid.generate();//hash to create a dir and save files
-      await EventDao.saveEvent(event, user );
+      event.hash = shortid.generate(); //hash to create a dir and save files
+      await EventDao.saveEvent(event, user);
 
-      ctx.ok({ message: `Event ${event.name} created`, event:event });
+      ctx.ok({ message: `Event ${event.name} created`, event: event });
     } catch (e) {
       ctx.badRequest({ error: { message: e.message } });
       return;
     }
   }
 
-  static uploadPhoto(ctx) {
+  static async uploadPhoto(ctx) {
     const { user } = ctx.state;
-    const { event } = ctx.request.body;
+    const { eventHash } = ctx.request.body;
+    const photo = ctx.request.files[0];
 
     if (!Array.includes(roles, user.role)) {
       ctx.unauthorized("User does not have permissions for it.");
       return;
     }
 
-    const busboy = new Busboy({ headers: ctx.request.headers });
-    busboy.on('file', function (fieldname, file, filename, encoding, mimetype) {
-      var saveTo = path.join(`./${user.?}/${event.hash}/}`, filename);
-      file.pipe(fs.createWriteStream(saveTo));
-    });
-    busboy.on('finish', function () {
-      ctx.ok({ message: "File Saved!" })
-    });
-    return ctx.request.pipe(busboy);
+    if (!eventHash) {
+      ctx.badRequest({ error: "Bad event format, expected a eventHash." });
+      return;
+    }
+
+    if (!photo) {
+      ctx.badRequest({ error: "Bad event format, expected a photo to save." });
+      return;
+    }
+
+    const userSlug = user.email.substr(0, user.email.indexOf("@") + 1);
+    const eventFolder = `./${userSlug}${eventHash}`;
+
+    !fs.existsSync(eventFolder) && fs.mkdirSync(eventFolder);
+
+    const status = fs.existsSync(`${eventFolder}/${photo.filename}`) ? "replaced" : "created";
+
+    fs.renameSync(photo.path, `${eventFolder}/${photo.filename}`);
+
+    ctx.ok({ message: "Upload complete!", status, photo: photo.filename });
   }
 
-
-  static getEvent() { }
+  static getEvent() {}
 }

@@ -1,7 +1,9 @@
 import Router from "koa-router";
-const router = new Router();
 import Middleware from "../middleware/event";
+import busboy from 'koa-busboy';
 
-router.get("/create", Middleware.createEvent)
+const router = new Router();
+router.post("/create", Middleware.createEvent);
+router.post("/upload-photo", busboy(), Middleware.uploadPhoto);
 
 export default router.routes();

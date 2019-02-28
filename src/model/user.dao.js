@@ -5,7 +5,7 @@ export default class UserDao {
    return  {name:"abacate", email, password: pass, role: "photographer", preferences:{}};
    
   }
-  static async loginUser(emai, user) {
+  static async loginUser() {
     return { success: true };
   }
   static logoutUser() {
@@ -15,7 +15,7 @@ export default class UserDao {
   static deleteUser() {
     return "userdeleted!";
   }
-  static updatePreferences(email, preferences) {
+  static updatePreferences() {
     return {};
   }
 }

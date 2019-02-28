@@ -6,6 +6,7 @@ import BodyParser from "koa-bodyparser";
 import Helmet from "koa-helmet";
 import respond from "koa-respond";
 import jwt from "koa-jwt";
+
 const app = new Koa();
 const router = new Router();
 
@@ -35,6 +36,7 @@ require("./routes").default(router);
 app.use(router.routes());
 app.use(router.allowedMethods());
 
+// eslint-disable-next-line no-console
 console.log(router.stack.map(i => i.path));
 
 export default app;
