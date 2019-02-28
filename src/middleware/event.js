@@ -3,7 +3,7 @@ import Busboy from "busboy";
 import path from "path";
 import fs from "fs";
 import os from "os";
-
+import shortid from 'shortid'
 const roles = ["p", "a"];
 
 export default class Event {
@@ -30,9 +30,10 @@ export default class Event {
         return;
       }
       event.status = "pending upload";
-      await EventDao.saveEvent(event, user);
+      event.hash = shortid.generate();//hash to create a dir and save files
+      await EventDao.saveEvent(event, user );
 
-      ctx.ok({ message: `Event ${event.name} created` });
+      ctx.ok({ message: `Event ${event.name} created`, event:event });
     } catch (e) {
       ctx.badRequest({ error: { message: e.message } });
       return;
@@ -41,6 +42,7 @@ export default class Event {
 
   static uploadPhoto(ctx) {
     const { user } = ctx.state;
+    const { event } = ctx.request.body;
 
     if (!Array.includes(roles, user.role)) {
       ctx.unauthorized("User does not have permissions for it.");
@@ -49,7 +51,7 @@ export default class Event {
 
     const busboy = new Busboy({ headers: ctx.request.headers });
     busboy.on('file', function (fieldname, file, filename, encoding, mimetype) {
-      var saveTo = path.join(os.tmpDir(), path.basename(fieldname));
+      var saveTo = path.join(`./${user.?}/${event.hash}/}`, filename);
       file.pipe(fs.createWriteStream(saveTo));
     });
     busboy.on('finish', function () {
