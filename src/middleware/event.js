@@ -51,10 +51,10 @@ export default class Event {
     const { eventHash, uploadError } = ctx.request.body;
     const photo = ctx.request.files[0];
 
-    
+
     if (uploadError) {
       ctx.badRequest({ error: uploadError });
-      return; 
+      return;
     }
 
     if (!Array.includes(roles, user.role)) {
@@ -84,14 +84,20 @@ export default class Event {
     ctx.ok({ message: "Upload complete!", status, photo: photo.filename });
   }
 
-  static getEvent(ctx) {
-    const { event = {} } = ctx.request.body;  
+  static async getEvent(ctx) {
+    const { event = {} } = ctx.request.body;
+    const { user } = ctx.state;
 
     if (!event.code) {
       ctx.badRequest({ error: "Bad event format, expected a event code." });
-      return;
     }
 
-    ctx.ok({event})
+    const eventStored = await EventDao.getEvent(event.code, user.email);
+    if(!eventStored){
+          ctx.notFound({message:"Event does not exists"});
+          return;
+      }
+
+    ctx.ok({event:eventStored})
   }
 }
