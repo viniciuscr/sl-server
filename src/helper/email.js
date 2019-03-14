@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer ";
+import nodemailer from "nodemailer";
 
 export default class Email {
   static async createTransporter() {

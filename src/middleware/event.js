@@ -1,7 +1,7 @@
 import EventDao from "../model/event.dao";
 import fs from "fs";
 import shortid from "shortid";
-import emailHelper from "../helpers/email";
+import emailHelper from "../helper/email";
 
 const roles = ["p", "a"];
 

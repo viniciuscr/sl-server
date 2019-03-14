@@ -44,4 +44,6 @@ export default class ClientDao {
   static async getEventsList({ clientEmail, active = false }) {
     return [];
   }
+
+  static async finishSelection(){}
 }
