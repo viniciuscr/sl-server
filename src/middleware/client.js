@@ -1,4 +1,11 @@
 import ClientDao from "../model/client.dao";
+import shortid from "shortid";
+import User from "../model/user";
+
+const isEmailValid = email =>
+  /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
+    email
+  );
 
 export default class Client {
   static async getEvent(ctx) {
@@ -47,6 +54,26 @@ export default class Client {
     const result = await ClientDao.saveSelection(event.code, event.selection, user.email);
 
     ctx.ok({ result });
+  }
+
+  static async login(ctx) {
+    let errors = {};
+    const { email, password } = ctx.request.body;
+
+    if (!isEmailValid(email)) {
+      errors.email = "Invalid e-mail.";
+    }
+    if (shortid.isValid(password)) {
+      errors.password = "Invalid password.";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      this.badRequest(errors);
+      return;
+    }
+    const client = new User(email, password, "c", {}); 
+
+    ctx.ok({ client });
   }
 
   static async finishSelection(ctx) {
