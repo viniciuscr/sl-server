@@ -12,4 +12,11 @@ export default class EventDao {
             
         }
     }
+
+    static async updateEvent(event,email){
+        //use mongo to merge photos´ array
+
+        //{ $setDifference: [ "photos", event.photos.toAdd ] }
+        //{ $setUnion: [ "photos", event.photos.toDelete] }
+    }
  }

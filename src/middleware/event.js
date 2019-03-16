@@ -46,6 +46,19 @@ export default class Event {
     }
   }
 
+  static async updateEvent(ctx) {
+    const { event = {} } = ctx.request.body;
+    const { user } = ctx.state;
+
+    if (!event.code) {
+      ctx.badRequest({ error: "Bad event format, expected a event code." });
+    }
+
+    const updateResult = await EventDao.updateEvent(event, user.email);
+
+    return ctx.ok(updateResult);
+  }
+
   static async uploadPhoto(ctx) {
     const { user } = ctx.state;
     const { eventHash, uploadError } = ctx.request.body;
@@ -93,11 +106,11 @@ export default class Event {
     }
 
     const eventStored = await EventDao.getEvent(event.code, user.email);
-    if(!eventStored){
-          ctx.notFound({message:"Event does not exists"});
-          return;
-      }
+    if (!eventStored) {
+      ctx.notFound({ message: "Event does not exists" });
+      return;
+    }
 
-    ctx.ok({event:eventStored})
+    ctx.ok({ event: eventStored })
   }
 }
