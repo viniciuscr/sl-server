@@ -9,7 +9,6 @@ export default class EventDao {
             photos:{
                 src: "/static/abacate@jjfhd/img001.jpeg"
             },
-            
         }
     }
 
