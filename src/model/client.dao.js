@@ -1,7 +1,22 @@
+import { ObjectId } from "bson"
+
+let clients
+
 export default class ClientDao {
+  static async injectDB(conn) {
+    if (clients) {
+      return;
+    }
+    try {
+      clients = await conn.db(process.env.DATA_BASE).collection("clients");
+    } catch (e) {
+      console.error(`Unable to establish collection handles in userDAO: ${e}`);
+    }
+  }
+
   static async getEvent({ eventCode, clientEmail, photographer }) {
     return {
-      _id: code,
+      _id: eventCode,
       name: "nome do evento",
       status: "open",
       photos: [
@@ -45,5 +60,5 @@ export default class ClientDao {
     return [];
   }
 
-  static async finishSelection(){}
+  static async finishSelection() {}
 }
