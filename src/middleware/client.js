@@ -59,7 +59,7 @@ export default class Client {
     }
 
     if (Object.keys(errors).length > 0) {
-      this.badRequest(errors);
+      ctx.badRequest(errors);
       return;
     }
 
@@ -80,7 +80,7 @@ export default class Client {
     }
 
     if (Object.keys(errors).length > 0) {
-      this.badRequest(errors);
+      ctx.badRequest(errors);
       return;
     }
     const client = new User(email, password, "c", {});

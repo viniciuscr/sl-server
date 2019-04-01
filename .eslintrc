@@ -7,7 +7,8 @@
   "env": {
     "es6": true,
     "mongo": true,
-    "node": true
+    "node": true,
+    "jest": true
   },
   "parserOptions": {
     "sourceType": "module"

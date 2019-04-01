@@ -5,9 +5,6 @@ import ClientDao from "./model/client.dao";
 import EventDao from "./model/event.dao";
 
 const port = process.env.PORT || 3000;
-app.listen(port, () => {
-  console.log(`listening on port ${port}`);
-});
 
 MongoClient.connect(process.env.DB_URI, { useNewUrlParser: true, poolSize: 50, wtimeout: 9500 })
   .catch(err => {
@@ -18,10 +15,6 @@ MongoClient.connect(process.env.DB_URI, { useNewUrlParser: true, poolSize: 50, w
     await UserDao.injectDB(client);
     await ClientDao.injectDB(client);
     await EventDao.injectDB(client);
-    app.listen(port, () => {
-      console.log(`listening on port ${port}`);
-    });
-
     app.listen(port, () => {
       console.log(`listening on port ${port}`);
     });
