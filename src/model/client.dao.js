@@ -1,6 +1,6 @@
-import { ObjectId } from "bson"
+import { ObjectId } from "bson";
 
-let clients
+let clients;
 
 export default class ClientDao {
   static async injectDB(conn) {
@@ -19,37 +19,42 @@ export default class ClientDao {
       _id: eventCode,
       name: "nome do evento",
       status: "open",
+      sizes: ["10x15", "13x18", "15x21"],
+      dates: {
+        start: "2019-04-23T18:25:43.511Z",
+        end: "2019-05-23T18:25:43.511Z"
+      },
       photos: [
         {
-          _id: "jfh37HSud7h3",
-          src: "/static/abacate@jjfhd/img001.jpeg"
+          name: "img001",
+          path: "/static/abacate@jjfhd/img001.jpeg"
         },
         {
-          _id: "88u8u7GHSud7h3",
-          src: "/static/abacate@jjfhd/img001.jpeg"
+          name: "img002",
+          path: "/static/abacate@jjfhd/img002.jpeg"
         },
         {
-          _id: "sdfju345ny",
-          src: "/static/abacate@jjfhd/img001.jpeg"
+          name: "img003",
+          path: "/static/abacate@jjfhd/img003.jpeg"
         }
       ],
       selection: {
         status: "selecting",
         photos: [
           {
-            photo_id: "jfh37HSud7h3",
+            photo: "img001.jpeg",
             size: "13x18",
+            quantity: 2
+          },
+          {
+            photo: "img001.jpeg",
+            size: "15x21",
             quantity: 1
           },
           {
-            photo_id: "jfh37HSud7h3",
-            size: "10x15",
+            photo: "img002.jpeg",
+            size: "15x21",
             quantity: 3
-          },
-          {
-            photo_id: "88u8u7GHSud7h3",
-            size: "13x18",
-            quantity: 2
           }
         ]
       }

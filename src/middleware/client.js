@@ -75,7 +75,7 @@ export default class Client {
     if (!isEmailValid(email)) {
       errors.email = "Invalid e-mail.";
     }
-    if (shortid.isValid(password)) {
+    if (!password) {
       errors.password = "Invalid password.";
     }
 
@@ -83,6 +83,7 @@ export default class Client {
       ctx.badRequest(errors);
       return;
     }
+
     const client = new User(email, password, "c", {});
 
     ctx.ok({ client });
