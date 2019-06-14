@@ -7,49 +7,47 @@ const roles = ["p", "a"];
 
 export default class Event {
   static async createEvent(ctx) {
-    try {
-      const { event = {} } = ctx.request.body;
-      const { user } = ctx.state;
+    const { event = {} } = ctx.request.body;
+    const { user } = ctx.state;
 
-      if (!Array.includes(roles, user.role)) {
-        ctx.unauthorized("User does not have permissions for it.");
-        return;
-      }
-      if (!event.name || typeof event.name !== "string") {
-        ctx.badRequest({ error: "Bad event format, expected name." });
-        return;
-      }
-
-      if (!(event.clients instanceof Array)) {
-        ctx.badRequest({ error: "Bad event format, expected a client´s list." });
-        return;
-      }
-      if (!(event.photos instanceof Array)) {
-        ctx.badRequest({ error: "Bad event format, expected a photo´s list." });
-        return;
-      }
-
-      event.clients = event.clients.map(email => ({ email, password: shortid.generate() }));
-      event.status = "pending upload";
-      event.hash = shortid.generate(); //hash to create a dir to save files inside
-      const userSlug = user.email.substr(0, user.email.indexOf("@") + 1);
-      const eventFolder = `./static/${userSlug}${event.hash}`;
-
-      event.photos = event.photos.map(photo => ({
-        ...photo,
-        path: `${eventFolder}/${photo.name}`
-      }));
-
-      const sendEmails = emailHelper.sendCreateEventEmails(event);
-      const saveEvent = EventDao.saveEvent(event, user);
-
-      const result = await Promise.all([sendEmails, saveEvent]);
-
-      ctx.ok({ message: `Event ${event.name} created`, event: event, result });
-    } catch (e) {
-      ctx.badRequest({ error: { message: e.message } });
+    if (!Array.includes(roles, user.role)) {
+      ctx.unauthorized("User does not have permissions for it.");
       return;
     }
+    if (!event.name || typeof event.name !== "string") {
+      ctx.badRequest({ error: "Bad event format, expected name." });
+      return;
+    }
+
+    if (!(event.clients instanceof Array)) {
+      ctx.badRequest({ error: "Bad event format, expected a client´s list." });
+      return;
+    }
+    if (!(event.photos instanceof Array)) {
+      ctx.badRequest({ error: "Bad event format, expected a photo´s list." });
+      return;
+    }
+
+    event.clients = event.clients.map(email => ({
+      email,
+      password: shortid.generate()
+    }));
+    event.status = "pending upload";
+    event.hash = shortid.generate(); //hash to create a dir to save files inside
+    const userSlug = user.email.substr(0, user.email.indexOf("@") + 1);
+    const eventFolder = `./static/${userSlug}${event.hash}`;
+
+    event.photos = event.photos.map(photo => ({
+      ...photo,
+      path: `${eventFolder}/${photo.name}`
+    }));
+
+    const sendEmails = emailHelper.sendCreateEventEmails(event);
+    const saveEvent = EventDao.saveEvent(event, user);
+
+    const result = await Promise.all([sendEmails, saveEvent]);
+
+    ctx.ok({ message: `Event ${event.name} created`, event: event, result });
   }
 
   static async updateEvent(ctx) {
@@ -95,7 +93,9 @@ export default class Event {
 
     !fs.existsSync(eventFolder) && fs.mkdirSync(eventFolder);
 
-    const status = fs.existsSync(`${eventFolder}/${photo.filename}`) ? "replaced" : "created";
+    const status = fs.existsSync(`${eventFolder}/${photo.filename}`)
+      ? "replaced"
+      : "created";
 
     fs.renameSync(photo.path, `${eventFolder}/${photo.filename}`);
 
@@ -108,9 +108,13 @@ export default class Event {
 
     if (!event.code) {
       ctx.badRequest({ error: "Bad event format, expected a event code." });
+      return;
     }
 
-    const eventStored = await EventDao.getEvent({ eventCode: event.code, userEmail: user.email });
+    const eventStored = await EventDao.getEvent({
+      eventCode: event.code,
+      userEmail: user.email
+    });
     if (!eventStored) {
       ctx.notFound({ message: "Event does not exists" });
       return;
