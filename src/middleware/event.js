@@ -113,7 +113,7 @@ export default class Event {
 
     const eventStored = await EventDao.getEvent({
       eventCode: event.code,
-      userEmail: user.email
+      user: user
     });
     if (!eventStored) {
       ctx.notFound({ message: "Event does not exists" });

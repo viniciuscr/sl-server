@@ -1,5 +1,7 @@
 import { ObjectId } from "bson";
-
+/**
+ *  @typedef {import('mongodb').Collection} Collection
+ *  @type {Collection} */
 let clients;
 
 export default class ClientDao {
@@ -8,7 +10,7 @@ export default class ClientDao {
       return;
     }
     try {
-      clients = await conn.db(process.env.DATA_BASE).collection("clients");
+      clients = await conn.db(process.env.DATA_BASE).collection("photographers");
     } catch (e) {
       console.error(`Unable to establish collection handles in userDAO: ${e}`);
     }
@@ -65,5 +67,19 @@ export default class ClientDao {
     return [];
   }
 
-  static async finishSelection() {}
+  static async find({ email, password }) {
+
+    const client = await clients.findOne({
+      "events.clients": {
+        "$elemMatch": {
+          "email": "clicli@mail.com",
+          "password": "Jjfh4d4"
+        }
+      }
+    })
+    console.log(client)
+
+  }
+
+  static async finishSelection() { }
 }

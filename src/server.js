@@ -18,17 +18,6 @@ app.use(respond());
 
 process.env.NODE_ENV === "development" && app.use(Logger());
 
-//Handle Errors
-app.use(async (ctx, next) => {
-  try {
-    await next();
-  } catch (err) {
-    ctx.status = err.status || 500;
-    ctx.body = err.message;
-    ctx.app.emit("error", err, ctx);
-  }
-});
-
 app.use(Cors());
 app.use(
   BodyParser({
@@ -43,7 +32,7 @@ app.use(
 
 app.use(
   jwt({ secret: process.env.SECRET_KEY }).unless({
-    path: [/^\/v[\d]{1,2}\/user\/[login|register]/]
+    path: [/^\/v[\d]{1,2}\/[user|client]\/[login|register]/]
   })
 );
 

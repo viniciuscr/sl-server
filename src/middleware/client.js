@@ -84,6 +84,9 @@ export default class Client {
       return;
     }
 
+
+   await ClientDao.find({email,password})
+
     const client = new User(email, password, "c", {});
 
     ctx.ok({ client });

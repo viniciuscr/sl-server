@@ -1,5 +1,5 @@
 {
-  "_id": "hjsdf78y23r728d283d3",
+  "_id": "5d793350d4fc8eba8abff23d",
   "name": "James J. Johan",
   "role": "photographer",
   "email": "photosense@gmail.com",
@@ -11,27 +11,26 @@
     "status": "active",
     "due_day": "23",
     "plan": "plan 30",
-    "price": 30.0,
-
+    "price": 30,
     "history": [
       {
         "plan": "plan 30",
         "due_day": "23",
-        "price": 30.0,
+        "price": 30,
         "status": "pending",
         "expiry": "2019-04-23T18:25:43.511Z"
       },
       {
         "plan": "plan 30",
         "due_day": "23",
-        "price": 30.0,
+        "price": 30,
         "status": "paid",
         "expiry": "2019-03-23T18:25:43.511Z"
       },
       {
         "plan": "plan 10",
         "due_day": "01",
-        "price": 10.0,
+        "price": 10,
         "status": "paid",
         "expiry": "2019-02-23T18:25:43.511Z"
       }
@@ -39,10 +38,14 @@
   },
   "events": [
     {
-      "_id": "324239udjsdf82h3f8",
+      "_id": "5d7a41ce1bbf9c0b472cb4ca",
       "hash": "Hdjs783",
       "name": "wedding doubledu",
-      "sizes": ["10x15", "13x18", "15x21"],
+      "sizes": [
+        "10x15",
+        "13x18",
+        "15x21"
+      ],
       "dates": {
         "start": "2019-04-23T18:25:43.511Z",
         "end": "2019-05-23T18:25:43.511Z"
@@ -63,7 +66,7 @@
       ],
       "clients": [
         {
-          "_id": "342d23d23dsw8",
+          "_id": "5d7a421e1bbf9c0b472cb4cb",
           "role": "c",
           "email": "clicli@mail.com",
           "password": "Jjfh4d4",

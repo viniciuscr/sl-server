@@ -6,7 +6,7 @@ import EventDao from "./model/event.dao";
 
 const port = process.env.PORT || 3000;
 
-MongoClient.connect(process.env.DB_URI, { useNewUrlParser: true, poolSize: 50, wtimeout: 9500 })
+MongoClient.connect(process.env.DB_URI, { useNewUrlParser: true, poolSize: 50, wtimeout: 9500, useUnifiedTopology: true  })
   .catch(err => {
     console.error(err.stack);
     process.exit(1);

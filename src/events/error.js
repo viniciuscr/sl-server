@@ -1,6 +1,11 @@
+/**
+ *  @typedef {import('Koa').ParameterizedContext} context
+ * 
+ * @param {HttpError} err 
+ * @param {context} ctx 
+ */
 const errorEvent = (err, ctx) => {
-  //TODO: save on database and/or file
-  ctx.throw(500, err.message);
+  console.log(err, ctx.URL)
 };
 
 export default errorEvent;
