@@ -73,7 +73,7 @@
     "eslint-plugin-prettier": "^3.0.1",
     "husky": "^4.2.3",
     "jest": "^24.5.0",
-    "nodemon": "^1.18.10",
+    "nodemon": "^2.0.10",
     "prettier": "^1.16.4",
     "supertest": "^4.0.2"
   }
